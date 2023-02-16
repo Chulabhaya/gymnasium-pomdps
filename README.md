@@ -1,4 +1,4 @@
-# gym-pomdps
+# gymnasium-pomdps
 
 This repository contains gym environments for flat/discrete POMDPs loaded from
 the pomdp file format.
