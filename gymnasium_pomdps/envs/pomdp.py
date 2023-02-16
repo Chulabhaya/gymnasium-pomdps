@@ -41,7 +41,8 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
         self.discount = model.discount
         self.state_space = spaces.Discrete(len(model.states))
         self.action_space = spaces.Discrete(len(model.actions))
-        self.observation_space = spaces.Discrete(len(model.observations))
+        # plus unique new initial observation
+        self.observation_space = spaces.Discrete(len(model.observations) + 1)
         self.reward_range = model.R.min(), model.R.max()
 
         self.rewards_dict = {r: i for i, r in enumerate(np.unique(model.R))}
@@ -71,6 +72,10 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
 
+    @property
+    def _observation0(self) -> Observation:
+        return self.observation_space.n - 1
+
     def reset(
         self, seed: int | None = None, options: dict[str, Any] | None = None
     ) -> tuple[Observation, dict[str, Any]]:
@@ -96,7 +101,7 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
 
     def reset_functional(self) -> Tuple[State, Observation, dict[str, Any]]:
         state = self.np_random.multinomial(1, self.start).argmax().item()
-        observation = NoObservation
+        observation = self._observation0
         return state, observation, {}
 
     def step_functional(

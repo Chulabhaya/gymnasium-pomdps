@@ -20,7 +20,9 @@ class BatchPOMDP(gym.Wrapper):
     def reset(self, seed=None, options=None):  # pylint: disable=arguments-differ
         self.env.reset(seed=seed)
 
-        self.state, info = self.reset_functional()
+        self.state, self.observation, info = self.reset_functional()
+
+        return self.observation, info
 
     def step(self, action):
         self.state, *ret = self.step_functional(self.state, action)
@@ -33,10 +35,11 @@ class BatchPOMDP(gym.Wrapper):
             state = self.np_random.multinomial(
                 1, self.env.start, size=self.batch_size
             ).argmax(1)
+        observation = np.full((self.batch_size,), self.unwrapped._observation0)
 
         info = {}
 
-        return state, info
+        return state, observation, info
 
     def step_functional(self, state, action):
         if ((state == -1) != (action == -1)).any():
