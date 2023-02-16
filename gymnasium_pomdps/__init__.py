@@ -2,10 +2,10 @@ import re
 
 from pkg_resources import resource_exists, resource_filename, resource_listdir
 
-from gym_pomdps.envs.pomdp import POMDP
-from gym_pomdps.envs.registration import env_list, register
-from gym_pomdps.rendering import get_render_function
-from gym_pomdps.rendering.renderer import PltRenderer
+from gymnasium_pomdps.envs.pomdp import POMDP
+from gymnasium_pomdps.envs.registration import env_list, register
+from gymnasium_pomdps.rendering import get_render_function
+from gymnasium_pomdps.rendering.renderer import PltRenderer
 
 __version__ = "1.0.0"
 
@@ -18,16 +18,16 @@ def list_pomdps():
 
 def is_pomdp(filename):  # pylint: disable=redefined-outer-name
     return filename.casefold().endswith(f".{extension.casefold()}") and resource_exists(
-        "gym_pomdps.pomdps", filename
+        "gymnasium_pomdps.pomdps", filename
     )
 
 
 for filename in (
     filename
-    for filename in resource_listdir("gym_pomdps", "pomdps")
+    for filename in resource_listdir("gymnasium_pomdps", "pomdps")
     if filename.casefold().endswith(f".{extension.casefold()}")
 ):
-    path = resource_filename("gym_pomdps.pomdps", filename)
+    path = resource_filename("gymnasium_pomdps.pomdps", filename)
     name, _ = filename.rsplit(".", 1)  # remove .pomdp extension
     version = 0
 
@@ -44,13 +44,13 @@ for filename in (
     renderer = None if render_function is None else PltRenderer(render_function)
     register(
         id=f"POMDP-{name}-continuing-v{version}",
-        entry_point="gym_pomdps.envs.pomdp:POMDP",
+        entry_point="gymnasium_pomdps.envs.pomdp:POMDP",
         kwargs=dict(text=text, episodic=False, renderer=renderer),
     )
 
     renderer = None if render_function is None else PltRenderer(render_function)
     register(
         id=f"POMDP-{name}-episodic-v{version}",
-        entry_point="gym_pomdps.envs.pomdp:POMDP",
+        entry_point="gymnasium_pomdps.envs.pomdp:POMDP",
         kwargs=dict(text=text, episodic=True, renderer=renderer),
     )

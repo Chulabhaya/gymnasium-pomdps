@@ -1,10 +1,10 @@
 import unittest
 
-import gym
+import gymnasium as gym
 import numpy as np
 import numpy.random as rnd
 
-from gym_pomdps.wrappers import BatchPOMDP
+from gymnasium_pomdps.wrappers import BatchPOMDP
 
 
 class Gym_BatchPOMDP_Test(unittest.TestCase):
@@ -17,7 +17,7 @@ class Gym_BatchPOMDP_Test(unittest.TestCase):
     def _test_functional(self, env, batch_size):
         env = BatchPOMDP(env, batch_size)
         for _ in range(20):
-            s = env.reset_functional()
+            s, info = env.reset_functional()
             self.assertIsInstance(s, np.ndarray)
             self.assertEqual(s.dtype, int)
             self.assertTrue(((s >= 0) & (s < env.state_space.n)).all())
@@ -25,7 +25,7 @@ class Gym_BatchPOMDP_Test(unittest.TestCase):
             s = rnd.randint(env.state_space.n, size=batch_size)
             a = rnd.randint(env.action_space.n, size=batch_size)
 
-            s1, o, r, done, info = env.step_functional(s, a)
+            s1, o, r, done, _, info = env.step_functional(s, a)
             self.assertIsInstance(s1, np.ndarray)
             self.assertEqual(s1.dtype, int)
             self.assertIsInstance(o, np.ndarray)
@@ -48,7 +48,7 @@ class Gym_BatchPOMDP_Test(unittest.TestCase):
 
             s = np.full([batch_size], -1)
             a = np.full([batch_size], -1)
-            s1, o, r, done, info = env.step_functional(s, a)
+            s1, o, r, done, _, info = env.step_functional(s, a)
             self.assertIsInstance(s1, np.ndarray)
             self.assertEqual(s1.dtype, int)
             self.assertIsInstance(o, np.ndarray)
@@ -77,7 +77,7 @@ class Gym_BatchPOMDP_Test(unittest.TestCase):
             for _ in range(100):
                 a = rnd.randint(env.action_space.n, size=batch_size)
                 a[done] = -1
-                o, r, done1, info = env.step(a)
+                o, r, done1, _, info = env.step(a)
 
                 self.assertIsInstance(o, np.ndarray)
                 self.assertIsInstance(r, np.ndarray)
@@ -108,25 +108,22 @@ class Gym_BatchPOMDP_Test(unittest.TestCase):
         actions = rnd.randint(env.action_space.n, size=(num_steps, batch_size))
 
         # run environment multiple times with same seed
-        env.seed(17)
-        env.reset()
+        env.reset(seed=17)
         output1 = list(map(env.step, actions))
 
-        env.seed(17)
-        env.reset()
+        env.reset(seed=17)
         output2 = list(map(env.step, actions))
 
-        for (o1, r1, done1, info1), (o2, r2, done2, info2) in zip(output1, output2):
+        for (o1, r1, done1, _, info1), (o2, r2, done2, _, info2) in zip(output1, output2):
             np.testing.assert_array_equal(o1, o2)
             np.testing.assert_array_equal(r1, r2)
             np.testing.assert_array_equal(done1, done2)
             np.testing.assert_equal(info1, info2)
 
-        env.seed(18)
-        env.reset()
+        env.reset(seed=18)
         output3 = list(map(env.step, actions))
 
-        for (o1, r1, done1, info1), (o3, r3, done3, info3) in zip(output1, output3):
+        for (o1, r1, done1, _, info1), (o3, r3, done3, _, info3) in zip(output1, output3):
             with self.assertRaises(AssertionError):
                 np.testing.assert_array_equal(o1, o3)
             with self.assertRaises(AssertionError):
@@ -144,19 +141,17 @@ class Gym_BatchPOMDP_Test(unittest.TestCase):
         env = gym.make('POMDP-loadunload-continuing-v0')
         actions = rnd.randint(env.action_space.n, size=num_steps)
 
-        env.seed(17)
-        env.reset()
+        env.reset(seed=17)
         outputs1 = list(map(env.step, actions))
 
         env = BatchPOMDP(env, batch_size)
         actions = actions.reshape(-1, 1)
 
-        env.seed(17)
-        env.reset()
+        env.reset(seed=17)
         outputs2 = list(map(env.step, actions))
 
         outputs = zip(outputs1, outputs2)
-        for (o1, r1, done1, info1), (o2, r2, done2, info2) in outputs:
+        for (o1, r1, done1, _, info1), (o2, r2, done2, _, info2) in outputs:
             np.testing.assert_array_equal(o1, o2)
             np.testing.assert_array_equal(r1, r2)
             np.testing.assert_array_equal(done1, done2)

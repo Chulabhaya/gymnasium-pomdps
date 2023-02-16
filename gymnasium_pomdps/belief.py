@@ -1,9 +1,9 @@
 from functools import lru_cache
 
-import gym
+import gymnasium as gym
 import numpy as np
 
-from gym_pomdps.envs.pomdp import POMDP
+from gymnasium_pomdps.envs.pomdp import POMDP
 
 __all__ = ['belief_init', 'belief_step', 'expected_reward', 'expected_obs']
 
@@ -17,7 +17,7 @@ def belief_init(env: gym.Env, shape=None) -> np.array:
     """
 
     if not isinstance(env.unwrapped, POMDP):
-        raise TypeError('env is not a gym_pomdps.POMDP')
+        raise TypeError('env is not a gymnasium_pomdps.POMDP')
 
     if shape is None:
         shape = ()
@@ -36,7 +36,7 @@ def belief_step(env: gym.Env, b: np.array, a: np.array, o: np.array) -> np.array
     """
 
     if not isinstance(env.unwrapped, POMDP):
-        raise TypeError('env is not a gym_pomdps.POMDP')
+        raise TypeError('env is not a gymnasium_pomdps.POMDP')
 
     b = np.asarray(b)
     a = np.asarray(a)
@@ -70,7 +70,7 @@ def expected_reward(env: gym.Env, b: np.ndarray, a: np.ndarray) -> np.ndarray:
     """
 
     if not isinstance(env.unwrapped, POMDP):
-        raise TypeError('env is not a gym_pomdps.POMDP')
+        raise TypeError('env is not a gymnasium_pomdps.POMDP')
 
     b = np.asarray(b)
     a = np.asarray(a)
@@ -97,7 +97,7 @@ def expected_obs(env: gym.Env, b: np.ndarray, a: np.ndarray) -> np.ndarray:
     """
 
     if not isinstance(env.unwrapped, POMDP):
-        raise TypeError('env is not a gym_pomdps.POMDP')
+        raise TypeError('env is not a gymnasium_pomdps.POMDP')
 
     b = np.asarray(b)
     a = np.asarray(a)
@@ -125,7 +125,7 @@ def _plausible(env: gym.Env, b: np.ndarray, a: np.ndarray, o: np.ndarray) -> np.
     """
 
     if not isinstance(env.unwrapped, POMDP):
-        raise TypeError('env is not a gym_pomdps.POMDP')
+        raise TypeError('env is not a gymnasium_pomdps.POMDP')
 
     p_sa_o = _P_SA_O(env)[:, a, o]
     return np.einsum('ib,bi->b', p_sa_o, b) > 0.0

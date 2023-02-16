@@ -3,10 +3,10 @@
 import argparse
 import shutil
 
-import gym
+import gymnasium as gym
 
-import gym_pomdps
-import gym_pomdps.belief
+import gymnasium_pomdps
+import gymnasium_pomdps.belief
 
 
 def manual_control(env, *, render: bool, symbolic: bool):
@@ -29,7 +29,7 @@ def manual_control(env, *, render: bool, symbolic: bool):
         if render:
             env.render()
 
-        b = gym_pomdps.belief.belief_init(env)
+        b = gymnasium_pomdps.belief.belief_init(env)
         print('#' * shutil.get_terminal_size().columns)
         print('## START')
         while True:
@@ -47,7 +47,7 @@ def manual_control(env, *, render: bool, symbolic: bool):
             if render:
                 env.render()
 
-            b = gym_pomdps.belief.belief_step(env, b, a, o)
+            b = gymnasium_pomdps.belief.belief_step(env, b, a, o)
 
             o = observations[o]
             print(f'## b = {b}')
@@ -63,7 +63,7 @@ def manual_control(env, *, render: bool, symbolic: bool):
 
 def main():
     parser = argparse.ArgumentParser('Manual Control')
-    parser.add_argument('pomdp', choices=gym_pomdps.env_list)
+    parser.add_argument('pomdp', choices=gymnasium_pomdps.env_list)
     parser.add_argument('--render', action='store_true')
     parser.add_argument('--symbolic', action='store_true')
     pargs = parser.parse_args()

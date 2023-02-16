@@ -4,8 +4,8 @@ from typing import Callable, Optional
 import matplotlib.pyplot as plt
 from typing_extensions import TypeAlias
 
-from gym_pomdps.rendering.canvas import Image
-from gym_pomdps.types import Observation
+from gymnasium_pomdps.rendering.canvas import Image
+from gymnasium_pomdps.types import Observation
 
 RenderFunction: TypeAlias = Callable[[Observation], Image]
 

@@ -3,7 +3,7 @@ from typing import Any, Optional, Tuple
 import numpy as np
 from typing_extensions import TypeAlias
 
-from gym_pomdps.rendering import colors
+from gymnasium_pomdps.rendering import colors
 
 Shape: TypeAlias = Tuple[int, int]
 Image: TypeAlias = np.ndarray

@@ -1,7 +1,7 @@
-import gym
+import gymnasium as gym
 import numpy as np
 
-from gym_pomdps.envs.pomdp import POMDP
+from gymnasium_pomdps.envs.pomdp import POMDP
 
 
 class BatchPOMDP(gym.Wrapper):
@@ -17,8 +17,10 @@ class BatchPOMDP(gym.Wrapper):
         self.batch_size = batch_size
         self.state = np.full([batch_size], -1)
 
-    def reset(self):  # pylint: disable=arguments-differ
-        self.state = self.reset_functional()
+    def reset(self, seed=None, options=None):  # pylint: disable=arguments-differ
+        self.env.reset(seed=seed)
+
+        self.state, info = self.reset_functional()
 
     def step(self, action):
         self.state, *ret = self.step_functional(self.state, action)
@@ -31,7 +33,10 @@ class BatchPOMDP(gym.Wrapper):
             state = self.np_random.multinomial(
                 1, self.env.start, size=self.batch_size
             ).argmax(1)
-        return state
+
+        info = {}
+
+        return state, info
 
     def step_functional(self, state, action):
         if ((state == -1) != (action == -1)).any():
@@ -44,7 +49,8 @@ class BatchPOMDP(gym.Wrapper):
         obs = np.full(shape, -1)
         reward = np.full(shape, 0.0)
         reward_cat = np.full(shape, -1)
-        done = np.full(shape, True)
+        terminated = np.full(shape, True)
+        truncated = np.full(shape, False)
 
         if mask.any():
             # unmasked states should be within bounds
@@ -81,10 +87,10 @@ class BatchPOMDP(gym.Wrapper):
             state1[mask] = s1
             obs[mask] = o
             reward[mask] = r
-            done[mask] = d
+            terminated[mask] = d
 
             reward_cat[mask] = [self.rewards_dict[r_] for r_ in r]
             info = dict(reward_cat=reward_cat)
 
         info = dict(reward_cat=reward_cat)
-        return state1, obs, reward, done, info
+        return state1, obs, reward, terminated, truncated, info

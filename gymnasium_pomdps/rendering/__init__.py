@@ -1,9 +1,9 @@
 from typing import Dict, Optional
 
-from gym_pomdps.rendering.heavenhell import (render_heavenhell1,
+from gymnasium_pomdps.rendering.heavenhell import (render_heavenhell1,
                                              render_heavenhell2,
                                              render_heavenhell3)
-from gym_pomdps.rendering.renderer import RenderFunction
+from gymnasium_pomdps.rendering.renderer import RenderFunction
 
 _render_functions: Dict[str, RenderFunction] = {
     'heavenhell_1': render_heavenhell1,

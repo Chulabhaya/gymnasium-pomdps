@@ -1,7 +1,6 @@
-import gym
-import gym.spaces
+import gymnasium as gym
 
-from gym_pomdps.envs.pomdp import POMDP
+from gymnasium_pomdps.envs.pomdp import POMDP
 
 
 class ResetObservationWrapper(gym.ObservationWrapper):

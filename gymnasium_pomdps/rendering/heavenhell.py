@@ -1,6 +1,6 @@
-from gym_pomdps.rendering.canvas import Canvas, Image
-from gym_pomdps.rendering.colors import SimplePalette
-from gym_pomdps.types import NoObservation, Observation
+from gymnasium_pomdps.rendering.canvas import Canvas, Image
+from gymnasium_pomdps.rendering.colors import SimplePalette
+from gymnasium_pomdps.types import NoObservation, Observation
 
 palette = SimplePalette(
     wall="black",

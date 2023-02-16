@@ -1,20 +1,26 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import spaces
-from gym.utils import seeding
+from gymnasium import spaces
 from rl_parsers.pomdp import parse
 
-from gym_pomdps.rendering.renderer import Renderer
-from gym_pomdps.types import (Action, NoAction, NoObservation, NoState,
-                              Observation, State)
+from gymnasium_pomdps.rendering.renderer import Renderer
+from gymnasium_pomdps.types import (
+    Action,
+    NoAction,
+    NoObservation,
+    NoState,
+    Observation,
+    State,
+)
 
 __all__ = ["POMDP"]
 
 
 class POMDP(gym.Env):  # pylint: disable=abstract-method
     """Environment specified by POMDP file."""
+    metadata = {"render_modes": ["human", "rgb_array"]}
 
     def __init__(
         self,
@@ -22,12 +28,11 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
         *,
         episodic: bool,
         renderer: Optional[Renderer] = None,
-        seed=None,
+        render_mode: Optional[str] = None,
     ):
         model = parse(text)
         self.episodic = episodic
         self.renderer = renderer
-        self.seed(seed)
 
         if model.values == "cost":
             raise ValueError("Unsupported `cost` values.")
@@ -63,32 +68,45 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
         self.state: State = NoState
         self.observation: Observation = NoObservation
 
-    def seed(self, seed):  # pylint: disable=signature-differs
-        self.np_random, seed_ = seeding.np_random(seed)
-        return [seed_]
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.render_mode = render_mode
 
-    def reset(self) -> Observation:
-        self.state, self.observation = self.reset_functional()
-        return self.observation
+    def reset(
+        self, seed: int | None = None, options: dict[str, Any] | None = None
+    ) -> tuple[Observation, dict[str, Any]]:
+        super().reset(seed=seed)
 
-    def step(self, action: Action) -> Tuple[Observation, float, bool, Optional[dict]]:
+        self.state, self.observation, info = self.reset_functional()
+
+        if self.render_mode == "human":
+            self.render()
+
+        return self.observation, info
+
+    def step(
+        self, action: Action
+    ) -> Tuple[Observation, float, bool, bool, dict[str, Any]]:
         ret = self.step_functional(self.state, action)
-        self.state, self.observation, reward, done, info = ret
-        return self.observation, reward, done, info
+        self.state, self.observation, reward, terminated, truncated, info = ret
 
-    def reset_functional(self) -> Tuple[State, Observation]:
+        if self.render_mode == "human":
+            self.render()
+
+        return self.observation, reward, terminated, truncated, info
+
+    def reset_functional(self) -> Tuple[State, Observation, dict[str, Any]]:
         state = self.np_random.multinomial(1, self.start).argmax().item()
         observation = NoObservation
-        return (state, observation)
+        return state, observation, {}
 
     def step_functional(
         self, state: State, action: Action
-    ) -> Tuple[State, Observation, float, bool, Optional[dict]]:
+    ) -> Tuple[State, Observation, float, bool, bool, dict[str, Any]]:
         if (state == NoState) != (action == NoAction):
             raise ValueError(f"Invalid state-action pair ({state}, {action}).")
 
         if state == NoState and action == NoAction:
-            return NoState, NoObservation, 0.0, True, None
+            return NoState, NoObservation, 0.0, True, False, {}
 
         assert 0 <= state < self.state_space.n
         assert 0 <= action < self.action_space.n
@@ -110,22 +128,22 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
 
         reward = self.R[state, action, next_state, observation].item()
 
-        done = self.D[state, action].item() if self.episodic else False
-        if done:
+        terminated = self.D[state, action].item() if self.episodic else False
+        if terminated:
             next_state = NoState
 
         reward_cat = self.rewards_dict[reward]
         info = dict(reward_cat=reward_cat)
 
-        return next_state, observation, reward, done, info
+        return next_state, observation, reward, terminated, False, info
 
-    def render(self, mode="human"):
+    def render(self):
+        mode = self.render_mode
+
         if self.renderer is None:
             return super().render(mode)
 
-        if mode == 'human':
+        if mode == "human":
             return self.renderer.show(self.observation)
-        elif mode == 'rgb_image':
+        elif mode == "rgb_array":
             return self.renderer.render(self.observation)
-
-        raise ValueError(f'invalid mode {mode}')

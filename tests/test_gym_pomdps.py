@@ -1,14 +1,14 @@
 import itertools as itt
 import unittest
 
-import gym
+import gymnasium as gym
 
-import gym_pomdps
+import gymnasium_pomdps
 
 
 class Gym_POMDP_Test(unittest.TestCase):
     def test_list_pomdps(self):
-        pomdps = gym_pomdps.list_pomdps()
+        pomdps = gymnasium_pomdps.list_pomdps()
 
         self.assertTrue(len(pomdps) > 0)
         for pomdp in pomdps:
@@ -24,7 +24,7 @@ class Gym_POMDP_Test(unittest.TestCase):
 
     def _test_functional(self, env):
         for _ in range(20):
-            s, o = env.reset_functional()
+            s, o, info = env.reset_functional()
             self.assertIsInstance(s, int)
             self.assertIsInstance(o, int)
             self.assertTrue(0 <= s < env.state_space.n)
@@ -33,7 +33,7 @@ class Gym_POMDP_Test(unittest.TestCase):
             for s, a in itt.product(
                 range(env.state_space.n), range(env.action_space.n)
             ):
-                s1, o, r, done, info = env.step_functional(s, a)
+                s1, o, r, done, _, info = env.step_functional(s, a)
                 if done:
                     self.assertIsInstance(s1, int)
                     self.assertIsInstance(o, int)
@@ -57,7 +57,7 @@ class Gym_POMDP_Test(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     env.step_functional(-1, a)
 
-            s1, o, r, done, info = env.step_functional(-1, -1)
+            s1, o, r, done, _, info = env.step_functional(-1, -1)
             self.assertIsInstance(s1, int)
             self.assertIsInstance(o, int)
             self.assertIsInstance(r, float)
@@ -80,7 +80,7 @@ class Gym_POMDP_Test(unittest.TestCase):
             for _ in range(100):
                 if done:
                     a = -1
-                    o, r, done, info = env.step(a)
+                    o, r, done, _, info = env.step(a)
                     self.assertIsInstance(o, int)
                     self.assertIsInstance(r, float)
                     self.assertIsInstance(done, bool)
@@ -88,7 +88,7 @@ class Gym_POMDP_Test(unittest.TestCase):
                     self.assertTrue(info is None or isinstance(info, dict))
                 else:
                     a = env.action_space.sample()
-                    o, r, done, info = env.step(a)
+                    o, r, done, _, info = env.step(a)
                     self.assertIsInstance(o, int)
                     self.assertIsInstance(r, float)
                     self.assertIsInstance(done, bool)
@@ -100,19 +100,16 @@ class Gym_POMDP_Test(unittest.TestCase):
         env = gym.make('POMDP-tiger-continuing-v0')
         actions = list(range(env.action_space.n)) * 20
 
-        env.seed(17)
-        env.reset()
+        env.reset(seed=17)
         outputs = list(map(env.step, actions))
 
         # same seed
-        env.seed(17)
-        env.reset()
+        env.reset(seed=17)
         outputs2 = list(map(env.step, actions))
         self.assertEqual(outputs, outputs2)
 
         # different seed
-        env.seed(18)
-        env.reset()
+        env.reset(seed=18)
         outputs2 = list(map(env.step, actions))
         self.assertNotEqual(outputs, outputs2)
 

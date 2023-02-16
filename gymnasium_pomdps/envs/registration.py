@@ -1,4 +1,4 @@
-from gym.envs.registration import register as gym_register
+from gymnasium.envs.registration import register as gym_register
 
 env_list = []
 
