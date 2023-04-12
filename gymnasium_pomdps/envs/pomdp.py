@@ -74,12 +74,12 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
 
     @property
     def _observation0(self) -> Observation:
-        return self.observation_space.n - 1
+        return int(self.observation_space.n) - 1
 
     def reset(
         self, seed: int | None = None, options: dict[str, Any] | None = None
     ) -> tuple[Observation, dict[str, Any]]:
-        super().reset(seed=seed)
+        super().reset(seed=seed, options=options)
 
         self.state, self.observation, info = self.reset_functional()
 
