@@ -135,7 +135,7 @@ class POMDP(gym.Env):  # pylint: disable=abstract-method
 
         terminated = self.D[state, action].item() if self.episodic else False
         if terminated:
-            next_state = NoState
+            next_state = 0
 
         reward_cat = self.rewards_dict[reward]
         info = dict(reward_cat=reward_cat)
