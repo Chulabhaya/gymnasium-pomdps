@@ -6,6 +6,11 @@ from gymnasium_pomdps.envs.pomdp import POMDP
 class MDP(gym.Wrapper):
     """Exposes the underlying MDP of a POMDP"""
 
+    metadata = {
+        "render_modes": ["human", "rgb_array"],
+        "render_fps": 50,
+    }
+
     def __init__(self, env):
         if not isinstance(env.unwrapped, POMDP):
             raise TypeError(f"Env is not a POMDP (got {type(env)}).")
